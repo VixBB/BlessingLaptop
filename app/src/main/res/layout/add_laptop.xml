@@ -28,8 +28,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottom_navigation"
-        android:layout_below="@id/header_layout"
+        android:layout_below="@+id/header_layout"
         android:padding="20dp">
 
         <LinearLayout
@@ -37,203 +36,125 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- File Upload -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="File Upload"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="*"
-                    android:textColor="#FF0000"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <RelativeLayout
-                android:id="@+id/uploadArea"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/dashed_border"
-                android:clickable="true"
-                android:focusable="true">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_upload"
-                        app:tint="#FFFFFF" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Tambah File..."
-                        android:textColor="#888888"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </RelativeLayout>
-
             <!-- Nama Laptop -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Nama Laptop"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                style="@style/add_laptop_label"
+                android:text="Nama Laptop" />
 
             <EditText
+                android:id="@+id/et_laptop_name"
+                style="@style/add_laptop_input"
+                android:hint="Ketik nama laptop" />
+
+            <!-- Deskripsi Laptop -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Deskripsi" />
+
+            <EditText
+                android:id="@+id/et_laptop_description"
+                style="@style/add_laptop_input"
+                android:layout_height="100dp"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:hint="Ketik deskripsi laptop..." />
+
+            <!-- Processor -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Processor" />
+
+            <EditText
+                android:id="@+id/et_processor"
+                style="@style/add_laptop_input"
+                android:hint="Contoh: Intel Core i7-12700H" />
+            
+            <!-- Graphics -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Graphics" />
+
+            <EditText
+                android:id="@+id/et_graphics"
+                style="@style/add_laptop_input"
+                android:hint="Contoh: NVIDIA GeForce RTX 3060" />
+
+            <!-- RAM -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="RAM" />
+
+            <EditText
+                android:id="@+id/et_ram"
+                style="@style/add_laptop_input"
+                android:hint="Contoh: 16GB DDR5" />
+
+            <!-- Storage -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Storage" />
+
+            <EditText
+                android:id="@+id/et_storage"
+                style="@style/add_laptop_input"
+                android:hint="Contoh: 1TB NVMe SSD" />
+
+            <!-- Screen -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Screen" />
+
+            <EditText
+                android:id="@+id/et_screen"
+                style="@style/add_laptop_input"
+                android:hint="Contoh: 15.6 inch QHD 165Hz" />
+
+            <!-- OS -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Operating System" />
+
+            <EditText
+                android:id="@+id/et_os"
+                style="@style/add_laptop_input"
+                android:hint="Contoh: Windows 11 Home" />
+
+            <!-- Kategori -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Kategori" />
+
+            <Spinner
+                android:id="@+id/spinner_category"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="ketik nama laptop"
-                android:paddingHorizontal="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#444444"
-                android:textSize="14sp" />
+                android:background="@drawable/bg_input_field" />
 
-            <!-- Component Section -->
+            <!-- Gambar -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
-                android:text="Component"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                style="@style/add_laptop_label"
+                android:text="Gambar" />
 
-            <!-- Prossesor -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Prossesor"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-            <EditText
+            <Spinner
+                android:id="@+id/spinner_image"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="ketik.."
-                android:paddingHorizontal="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#444444"
-                android:textSize="14sp" />
-
-            <!-- Grafis -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Grafis"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="ketik.."
-                android:paddingHorizontal="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#444444"
-                android:textSize="14sp" />
-
-            <!-- Penyimpanan -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Penyimpanan"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="ketik.."
-                android:paddingHorizontal="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#444444"
-                android:textSize="14sp" />
-
-            <!-- Ram -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Ram"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="ketik.."
-                android:paddingHorizontal="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#444444"
-                android:textSize="14sp" />
-
-            <!-- Layar -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Layar"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="20dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="ketik.."
-                android:paddingHorizontal="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#444444"
-                android:textSize="14sp" />
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field" />
 
             <Button
-                android:id="@+id/btn_detail"
+                android:id="@+id/btn_add_laptop"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="40dp"
                 android:text="TAMBAH"
                 android:textColor="@color/white"
                 app:backgroundTint="#003C91"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:cornerRadius="10dp"
-                android:layout_marginBottom="40dp"/>
+                app:cornerRadius="10dp" />
 
         </LinearLayout>
     </ScrollView>
