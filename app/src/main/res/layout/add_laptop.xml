@@ -36,6 +36,27 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Image Upload -->
+            <TextView
+                style="@style/add_laptop_label"
+                android:text="Gambar Laptop" />
+
+            <ImageView
+                android:id="@+id/iv_laptop_preview"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:scaleType="centerCrop"
+                android:src="@drawable/skensa" />
+
+            <Button
+                android:id="@+id/btn_upload_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Pilih Gambar" />
+
             <!-- Nama Laptop -->
             <TextView
                 style="@style/add_laptop_label"
@@ -68,7 +89,7 @@
                 android:id="@+id/et_processor"
                 style="@style/add_laptop_input"
                 android:hint="Contoh: Intel Core i7-12700H" />
-            
+
             <!-- Graphics -->
             <TextView
                 style="@style/add_laptop_label"
@@ -126,18 +147,6 @@
 
             <Spinner
                 android:id="@+id/spinner_category"
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input_field" />
-
-            <!-- Gambar -->
-            <TextView
-                style="@style/add_laptop_label"
-                android:text="Gambar" />
-
-            <Spinner
-                android:id="@+id/spinner_image"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:layout_marginTop="8dp"

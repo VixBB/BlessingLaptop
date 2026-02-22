@@ -1,7 +1,9 @@
 package com.example.loginmenu
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,14 +32,27 @@ class LaptopAdapter(private val listLaptop: List<Laptop>) :
         val laptop = listLaptop[position]
         holder.tvNamaLaptop.text = laptop.nama
 
-        // Get resource ID from image name
-        val imageName = laptop.url_gambar
-        val imageId = holder.itemView.context.resources.getIdentifier(imageName, "drawable", holder.itemView.context.packageName)
-
-        Glide.with(holder.itemView.context)
-            .load(if (imageId != 0) imageId else R.drawable.skensa) // Fallback to placeholder
-            .placeholder(R.drawable.skensa)
-            .into(holder.imgLaptop)
+        // Handle image loading
+        if (!laptop.imageData.isNullOrEmpty()) {
+            // New method: Decode Base64 string and load bitmap
+            try {
+                val imageBytes = Base64.decode(laptop.imageData, Base64.DEFAULT)
+                val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                Glide.with(holder.itemView.context)
+                    .load(decodedImage)
+                    .placeholder(R.drawable.skensa)
+                    .into(holder.imgLaptop)
+            } catch (e: Exception) {
+                holder.imgLaptop.setImageResource(R.drawable.skensa) // Fallback on error
+            }
+        } else {
+            // Fallback for old data: Load from drawable name
+            val imageId = holder.itemView.context.resources.getIdentifier(laptop.nama?.replace(" ", "")?.toLowerCase(), "drawable", holder.itemView.context.packageName)
+            Glide.with(holder.itemView.context)
+                .load(if (imageId != 0) imageId else R.drawable.skensa) // Fallback to placeholder
+                .placeholder(R.drawable.skensa)
+                .into(holder.imgLaptop)
+        }
 
         // --- LOGIC SINKRONISASI TOMBOL ---
         if (laptop.borrowed) {
@@ -64,7 +79,12 @@ class LaptopAdapter(private val listLaptop: List<Laptop>) :
     private fun bukaDetail(holder: ViewHolder, laptop: Laptop) {
         val intent = Intent(holder.itemView.context, DetailActivity::class.java)
         intent.putExtra("NAMA_LAPTOP", laptop.nama)
-        intent.putExtra("GAMBAR_LAPTOP_NAMA", laptop.url_gambar) // Pass the image name
+        // Pass image data if available, otherwise pass the old name
+        if (!laptop.imageData.isNullOrEmpty()) {
+            intent.putExtra("GAMBAR_LAPTOP_DATA", laptop.imageData)
+        } else {
+            intent.putExtra("GAMBAR_LAPTOP_NAMA", laptop.nama?.replace(" ", "")?.toLowerCase())
+        }
         holder.itemView.context.startActivity(intent)
     }
 

@@ -1,9 +1,11 @@
 package com.example.loginmenu
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.Button
@@ -32,16 +34,26 @@ class DetailActivity : AppCompatActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         val namaLaptop = intent.getStringExtra("NAMA_LAPTOP") ?: ""
+        val gambarData = intent.getStringExtra("GAMBAR_LAPTOP_DATA")
         val gambarNama = intent.getStringExtra("GAMBAR_LAPTOP_NAMA")
 
         tvNama.text = namaLaptop
 
-        // Get resource ID from image name
-        val imageId = resources.getIdentifier(gambarNama, "drawable", packageName)
-        Glide.with(this)
-            .load(if (imageId != 0) imageId else R.drawable.skensa) // Fallback to placeholder
-            .placeholder(R.drawable.skensa)
-            .into(imgDetail)
+        // Handle image loading
+        if (gambarData != null) {
+            try {
+                val imageBytes = Base64.decode(gambarData, Base64.DEFAULT)
+                val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                Glide.with(this).load(decodedImage).placeholder(R.drawable.skensa).into(imgDetail)
+            } catch (e: Exception) {
+                imgDetail.setImageResource(R.drawable.skensa)
+            }
+        } else if (gambarNama != null) {
+            val imageId = resources.getIdentifier(gambarNama, "drawable", packageName)
+            Glide.with(this).load(if (imageId != 0) imageId else R.drawable.skensa).placeholder(R.drawable.skensa).into(imgDetail)
+        } else {
+            imgDetail.setImageResource(R.drawable.skensa)
+        }
 
         fetchLaptopDetails(namaLaptop, btnPinjam)
 
