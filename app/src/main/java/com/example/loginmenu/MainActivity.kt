@@ -75,12 +75,12 @@ class MainActivity : AppCompatActivity() {
 
                     if (role == "admin") {
                         // JIKA ADMIN
-                        GlobalData.isAdmin = true
+                        SessionManager.isAdmin = true
                         Snackbar.make(loginBtn, "✅ Welcome Admin!", Snackbar.LENGTH_SHORT).show()
                         startActivity(Intent(this, HomeAdmin::class.java))
                     } else {
                         // JIKA USER BIASA
-                        GlobalData.isAdmin = false
+                        SessionManager.isAdmin = false
                         Snackbar.make(loginBtn, "✅ Welcome User!", Snackbar.LENGTH_SHORT).show()
                         startActivity(Intent(this, HomeActivity::class.java))
                     }
