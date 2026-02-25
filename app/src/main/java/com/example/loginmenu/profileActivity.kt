@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import android.content.Context
+import android.widget.Toast
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -18,6 +20,8 @@ class ProfileActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private val laptopCollection = db.collection("laptops")
     private val borrowedLaptops = mutableListOf<Laptop>()
+    private lateinit var auth: FirebaseAuth
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,28 +60,41 @@ class ProfileActivity : AppCompatActivity() {
                     finish()
                     true
                 }
+
                 R.id.nav_laptop -> {
                     startActivity(Intent(this, LaptopActivity::class.java))
                     overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
                     finish()
                     true
                 }
+
                 R.id.nav_profile -> {
                     true
                 }
+
                 else -> false
             }
         }
     }
 
     private fun fetchBorrowedLaptops() {
-        // This is a simplified query. In a real app, you'd filter by the current user.
-        laptopCollection.whereEqualTo("borrowed", true).get()
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) return
+
+        val uid = currentUser.uid
+
+        laptopCollection
+            .whereEqualTo("borrowed", true)
+            .whereEqualTo("borrowedBy", uid)
+            .get()
             .addOnSuccessListener { documents ->
+                borrowedLaptops.clear()
+
                 for (document in documents) {
                     val laptop = document.toObject(Laptop::class.java)
                     borrowedLaptops.add(laptop)
                 }
+
                 adapter.notifyDataSetChanged()
             }
             .addOnFailureListener { exception ->
