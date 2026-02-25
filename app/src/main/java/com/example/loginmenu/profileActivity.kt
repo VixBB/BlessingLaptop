@@ -22,7 +22,10 @@ class ProfileActivity : AppCompatActivity() {
     private val borrowedLaptops = mutableListOf<Laptop>()
     private lateinit var auth: FirebaseAuth
 
-
+    override fun onResume() {
+        super.onResume()
+        com.example.loginmenu.fetchBorrowedLaptops()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
@@ -101,4 +104,39 @@ class ProfileActivity : AppCompatActivity() {
                 Log.w("ProfileActivity", "Error getting documents: ", exception)
             }
     }
+}
+
+private fun fetchBorrowedLaptops() {
+
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    if (currentUser == null) {
+        Toast.makeText(applicationContext, "User belum login", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val uid = currentUser.uid
+
+    laptopCollection
+        .whereEqualTo("borrowed", true)
+        .whereEqualTo("borrowedBy", uid)
+        .get()
+        .addOnSuccessListener { documents ->
+
+            borrowedLaptops.clear()
+
+            if (documents.isEmpty) {
+                Toast.makeText(applicationContext, "Belum ada laptop dipinjam", Toast.LENGTH_SHORT).show()
+            }
+
+            for (document in documents) {
+                val laptop = document.toObject(Laptop::class.java)
+                borrowedLaptops.add(laptop)
+            }
+
+            adapter.notifyDataSetChanged()
+        }
+        .addOnFailureListener { exception ->
+            Log.e("ProfileActivity", "Error mengambil data", exception)
+            Toast.makeText(applicationContext, "Gagal memuat data", Toast.LENGTH_SHORT).show()
+        }
 }
