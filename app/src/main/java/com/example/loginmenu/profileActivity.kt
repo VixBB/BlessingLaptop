@@ -117,7 +117,7 @@ private fun fetchBorrowedLaptops() {
 
     val currentUser = FirebaseAuth.getInstance().currentUser
     if (currentUser == null) {
-        Toast.makeText(this@profile, "User belum login", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "User Belum Login", Toast.LENGTH_SHORT).show()
         return
     }
 
@@ -132,7 +132,7 @@ private fun fetchBorrowedLaptops() {
             borrowedLaptops.clear()
 
             if (documents.isEmpty) {
-                Toast.makeText(this@profile, "Belum ada laptop dipinjam", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Belum ada Laptop Yang Dipinjam", Toast.LENGTH_SHORT).show()
             }
 
             for (document in documents) {
@@ -144,6 +144,6 @@ private fun fetchBorrowedLaptops() {
         }
         .addOnFailureListener { exception ->
             Log.e("ProfileActivity", "Error mengambil data", exception)
-            Toast.makeText(this@profile, "Gagal memuat data", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Gagal mengambil data", Toast.LENGTH_SHORT).show()
         }
 }
