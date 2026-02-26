@@ -30,14 +30,17 @@ class LaptopAdapter(private val listLaptop: List<Laptop>) :
         val laptop = listLaptop[position]
         holder.tvNamaLaptop.text = laptop.nama
 
-        // Menggunakan Glide untuk load gambar (laptop.url_gambar adalah Int)
+        // Get resource ID from image name
+        val imageName = laptop.url_gambar
+        val imageId = holder.itemView.context.resources.getIdentifier(imageName, "drawable", holder.itemView.context.packageName)
+
         Glide.with(holder.itemView.context)
-            .load(laptop.url_gambar)
+            .load(if (imageId != 0) imageId else R.drawable.skensa) // Fallback to placeholder
             .placeholder(R.drawable.skensa)
             .into(holder.imgLaptop)
 
         // --- LOGIC SINKRONISASI TOMBOL ---
-        if (laptop.isBorrowed) {
+        if (laptop.borrowed) {
             holder.btnDetail.text = "Dipinjam"
             holder.btnDetail.setBackgroundColor(Color.GRAY)
             holder.btnDetail.isEnabled = false
@@ -61,7 +64,7 @@ class LaptopAdapter(private val listLaptop: List<Laptop>) :
     private fun bukaDetail(holder: ViewHolder, laptop: Laptop) {
         val intent = Intent(holder.itemView.context, DetailActivity::class.java)
         intent.putExtra("NAMA_LAPTOP", laptop.nama)
-        intent.putExtra("GAMBAR_LAPTOP", laptop.url_gambar) // laptop.url_gambar adalah Int
+        intent.putExtra("GAMBAR_LAPTOP_NAMA", laptop.url_gambar) // Pass the image name
         holder.itemView.context.startActivity(intent)
     }
 

@@ -1,33 +1,16 @@
 package com.example.loginmenu
 
+import com.google.firebase.firestore.IgnoreExtraProperties
+
 // Model Laptop
+@IgnoreExtraProperties
 data class Laptop(
-    val nama: String,
-    val url_gambar: Int,
-    val deskripsi: String = "",
-    var isBorrowed: Boolean = false,
-    var peminjamNama: String = "",
-    var peminjamNis: String = "",
-    var peminjamKelas: String = ""
+    val nama: String? = null,
+    val url_gambar: String? = null,
+    val deskripsi: String? = null,
+    val category: String? = null,
+    var borrowed: Boolean = false,
+    var peminjamNama: String? = null,
+    var peminjamNis: String? = null,
+    var peminjamKelas: String? = null
 )
-
-object GlobalData {
-    var isAdmin: Boolean = false
-
-    // List utama untuk semua laptop
-    val listSemuaLaptop = mutableListOf(
-        Laptop("Lenovo Legion 5 Pro", R.drawable.legionbg, isBorrowed = true, peminjamNama = "Budi Santoso", peminjamNis = "12345", peminjamKelas = "XII RPL 1"),
-        Laptop("HP OMEN 15", R.drawable.omen,),
-        Laptop("Legion Pro Rollable", R.drawable.lenovo, ),
-        Laptop("Asus ROG STRIX G16", R.drawable.rog, ),
-        Laptop("Macbook Pro M5", R.drawable.macm5, ),
-        Laptop("Asus TUF Gaming A15", R.drawable.tufa15, ),
-        Laptop("Macbook Air M2", R.drawable.airm2, ),
-        Laptop("Axioo Pongo 750", R.drawable.axiopongo,),
-        Laptop("HP Victus 15", R.drawable.victus, ),
-        Laptop("Axioo Maybook Hype7", R.drawable.axiohype),
-    )
-
-    // List untuk menampung laptop yang sudah dipinjam
-    val listPinjaman = mutableListOf<Laptop>()
-}

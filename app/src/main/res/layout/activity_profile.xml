@@ -6,22 +6,22 @@
     android:background="#121212">
 
     <RelativeLayout
-    android:id="@+id/header_profile"
-    android:layout_width="match_parent"
-    android:layout_height="100dp"
-    android:background="@drawable/header_home"
-    android:paddingTop="40dp">
+        android:id="@+id/header_profile"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/header_home"
+        android:paddingTop="40dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Profile"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginTop="14dp"
-        android:layout_centerHorizontal="true" />
-</RelativeLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Profile"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="14dp"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -43,13 +43,23 @@
                 android:layout_marginTop="20dp" />
 
             <TextView
+                android:id="@+id/tv_username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="I Gde Aditya Shivano Yasa"
+                android:text="Username"
                 android:textColor="@color/white"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginTop="10dp" />
+
+            <TextView
+                android:id="@+id/tv_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="email@example.com"
+                android:textColor="#AAAAAA"
+                android:textSize="16sp"
+                android:layout_marginTop="4dp" />
 
             <TextView
                 android:id="@+id/tv_logout"

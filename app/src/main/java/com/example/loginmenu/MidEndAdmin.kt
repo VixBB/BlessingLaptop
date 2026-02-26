@@ -2,14 +2,22 @@ package com.example.loginmenu
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MidEndAdmin : AppCompatActivity() {
+
+    private lateinit var rvMidEnd: RecyclerView
+    private lateinit var adapter: LaptopAdapter
+    private val db = FirebaseFirestore.getInstance()
+    private val laptopCollection = db.collection("laptops")
+    private val midEndLaptops = mutableListOf<Laptop>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,19 +33,12 @@ class MidEndAdmin : AppCompatActivity() {
             startActivity(Intent(this, AddLaptop::class.java))
         }
 
-        val rvMidEnd = findViewById<RecyclerView>(R.id.rv_mid_end)
-
-        // UBAH INI: Gunakan GridLayoutManager agar sesuai preview
+        rvMidEnd = findViewById(R.id.rv_mid_end)
         rvMidEnd.layoutManager = GridLayoutManager(this, 2)
-        val listMidEnd = GlobalData.listSemuaLaptop.filter {
-            it.nama == "HP Victus 15" ||
-            it.nama == "Axioo Pongo 750" ||
-            it.nama == "Macbook Air M2" ||
-            it.nama == "Asus TUF Gaming A15"
-        }
-
-        val adapter = LaptopAdapter(listMidEnd)
+        adapter = LaptopAdapter(midEndLaptops)
         rvMidEnd.adapter = adapter
+
+        fetchMidEndLaptops()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.selectedItemId = R.id.nav_laptop
@@ -64,5 +65,19 @@ class MidEndAdmin : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    private fun fetchMidEndLaptops() {
+        laptopCollection.whereEqualTo("category", "Mid-Range").get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val laptop = document.toObject(Laptop::class.java)
+                    midEndLaptops.add(laptop)
+                }
+                adapter.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                Log.w("MidEndAdmin", "Error getting documents: ", exception)
+            }
     }
 }

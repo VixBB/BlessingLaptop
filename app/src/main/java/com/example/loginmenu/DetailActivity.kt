@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
@@ -11,11 +12,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.firestore.FirebaseFirestore
 
 class DetailActivity : AppCompatActivity() {
 
+    private val db = FirebaseFirestore.getInstance()
     private var currentLaptop: Laptop? = null
+    private var laptopDocumentId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,43 +31,26 @@ class DetailActivity : AppCompatActivity() {
         val btnPinjam = findViewById<Button>(R.id.btn_pinjam)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        val namaLaptop = intent.getStringExtra("NAMA_LAPTOP") ?: "Laptop"
-        val gambarId = intent.getIntExtra("GAMBAR_LAPTOP", R.drawable.legionbg)
-
-        currentLaptop = GlobalData.listSemuaLaptop.find { it.nama == namaLaptop }
-        val sudahDipinjam = currentLaptop?.isBorrowed ?: false
+        val namaLaptop = intent.getStringExtra("NAMA_LAPTOP") ?: ""
+        val gambarNama = intent.getStringExtra("GAMBAR_LAPTOP_NAMA")
 
         tvNama.text = namaLaptop
-        imgDetail.setImageResource(gambarId)
 
-        if (GlobalData.isAdmin) {
-            btnPinjam.text = "Detail Peminjam"
-            btnPinjam.setBackgroundColor(Color.parseColor("#002052"))
-            btnPinjam.setOnClickListener {
-                if (sudahDipinjam) {
-                    showBorrowerDetailDialog()
-                } else {
-                    Toast.makeText(this, "Laptop ini belum ada yang meminjam", Toast.LENGTH_SHORT).show()
-                }
-            }
-        } else {
-            if (sudahDipinjam) {
-                btnPinjam.setBackgroundColor(Color.GRAY)
-                btnPinjam.text = "Laptop Tidak Tersedia"
-                btnPinjam.setOnClickListener { showFailedDialog() }
-            } else {
-                btnPinjam.setBackgroundColor(Color.parseColor("#00AD00"))
-                btnPinjam.text = "Pinjam Sekarang"
-                btnPinjam.setOnClickListener { showSuccessDialog(namaLaptop, gambarId) }
-            }
-        }
+        // Get resource ID from image name
+        val imageId = resources.getIdentifier(gambarNama, "drawable", packageName)
+        Glide.with(this)
+            .load(if (imageId != 0) imageId else R.drawable.skensa) // Fallback to placeholder
+            .placeholder(R.drawable.skensa)
+            .into(imgDetail)
+
+        fetchLaptopDetails(namaLaptop, btnPinjam)
 
         // Setup Bottom Nav
         bottomNav.selectedItemId = R.id.nav_laptop
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    val activityClass = if (GlobalData.isAdmin) HomeAdmin::class.java else HomeActivity::class.java
+                    val activityClass = if (SessionManager.isAdmin) HomeAdmin::class.java else HomeActivity::class.java
                     startActivity(Intent(this, activityClass))
                     finish()
                     true
@@ -72,12 +60,56 @@ class DetailActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_profile -> {
-                    val activityClass = if (GlobalData.isAdmin) ProfileAdmin::class.java else ProfileActivity::class.java
+                    val activityClass = if (SessionManager.isAdmin) ProfileAdmin::class.java else ProfileActivity::class.java
                     startActivity(Intent(this, activityClass))
                     finish()
                     true
                 }
                 else -> false
+            }
+        }
+    }
+
+    private fun fetchLaptopDetails(namaLaptop: String, btnPinjam: Button) {
+        db.collection("laptops").whereEqualTo("nama", namaLaptop).limit(1).get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val document = documents.documents[0]
+                    laptopDocumentId = document.id
+                    currentLaptop = document.toObject(Laptop::class.java)
+                    updateUi(btnPinjam)
+                } else {
+                    Toast.makeText(this, "Laptop tidak ditemukan", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w("DetailActivity", "Error getting documents: ", exception)
+                Toast.makeText(this, "Gagal memuat data laptop", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun updateUi(btnPinjam: Button) {
+        currentLaptop?.let { laptop ->
+            if (SessionManager.isAdmin) {
+                btnPinjam.text = "Detail Peminjam"
+                btnPinjam.setBackgroundColor(Color.parseColor("#002052"))
+                btnPinjam.setOnClickListener {
+                    if (laptop.borrowed) {
+                        showBorrowerDetailDialog()
+                    } else {
+                        Toast.makeText(this, "Laptop ini belum ada yang meminjam", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                if (laptop.borrowed) {
+                    btnPinjam.setBackgroundColor(Color.GRAY)
+                    btnPinjam.text = "Laptop Tidak Tersedia"
+                    btnPinjam.setOnClickListener { showFailedDialog() }
+                } else {
+                    btnPinjam.setBackgroundColor(Color.parseColor("#00AD00"))
+                    btnPinjam.text = "Pinjam Sekarang"
+                    btnPinjam.setOnClickListener { showSuccessDialog() }
+                }
             }
         }
     }
@@ -103,19 +135,23 @@ class DetailActivity : AppCompatActivity() {
         }
 
         btnKembalikan.setOnClickListener {
-            currentLaptop?.apply {
-                isBorrowed = false
-                peminjamNama = ""
-                peminjamNis = ""
-                peminjamKelas = ""
+            laptopDocumentId?.let {
+                db.collection("laptops").document(it)
+                    .update(mapOf(
+                        "borrowed" to false,
+                        "peminjamNama" to "",
+                        "peminjamNis" to "",
+                        "peminjamKelas" to ""
+                    ))
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Status laptop telah dikembalikan", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                        recreate()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Gagal mengembalikan: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
-            GlobalData.listPinjaman.remove(currentLaptop)
-
-            Toast.makeText(this, "Status laptop telah dikembalikan", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-
-            // Refresh tampilan detail
-            recreate()
         }
 
         btnClose.setOnClickListener { dialog.dismiss() }
@@ -125,7 +161,7 @@ class DetailActivity : AppCompatActivity() {
         dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
-    private fun showSuccessDialog(nama: String, gambar: Int) {
+    private fun showSuccessDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_success, null)
         val builder = AlertDialog.Builder(this)
         builder.setView(dialogView)
@@ -135,24 +171,25 @@ class DetailActivity : AppCompatActivity() {
 
         val btnOk = dialogView.findViewById<Button>(R.id.btn_dialog_ok)
         btnOk?.setOnClickListener {
-            val laptop = GlobalData.listSemuaLaptop.find { it.nama == nama }
-            laptop?.apply {
-                isBorrowed = true
-                peminjamNama = "User Student" // Placeholder
-                peminjamNis = "12345678"      // Placeholder
-                peminjamKelas = "XI RPL 2"   // Placeholder
+            laptopDocumentId?.let {
+                db.collection("laptops").document(it)
+                    .update(mapOf(
+                        "borrowed" to true,
+                        "peminjamNama" to "User Student", // Placeholder
+                        "peminjamNis" to "12345678",      // Placeholder
+                        "peminjamKelas" to "XI RPL 2"   // Placeholder
+                    ))
+                    .addOnSuccessListener {
+                        dialog.dismiss()
+                        val intent = Intent(this, ProfileActivity::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                        finish()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Gagal meminjam: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
-
-            if (laptop != null && GlobalData.listPinjaman.none { it.nama == nama }) {
-                GlobalData.listPinjaman.add(laptop)
-            }
-
-            dialog.dismiss()
-
-            val intent = Intent(this, ProfileActivity::class.java)
-            startActivity(intent)
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-            finish()
         }
 
         dialog.show()
