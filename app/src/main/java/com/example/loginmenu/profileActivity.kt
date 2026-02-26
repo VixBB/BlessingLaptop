@@ -4,15 +4,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
+
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import android.content.Context
-import android.widget.Toast
 
+private lateinit var rvPinjam: RecyclerView
+private lateinit var adapter: LaptopAdapter
+private val borrowedLaptops = mutableListOf<Laptop>()
+
+private val db = FirebaseFirestore.getInstance()
+private val laptopCollection = db.collection("laptops")
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var rvPinjam: RecyclerView
@@ -24,7 +31,7 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        com.example.loginmenu.fetchBorrowedLaptops()
+        fetchBorrowedLaptops()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +117,7 @@ private fun fetchBorrowedLaptops() {
 
     val currentUser = FirebaseAuth.getInstance().currentUser
     if (currentUser == null) {
-        Toast.makeText(applicationContext, "User belum login", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@profile, "User belum login", Toast.LENGTH_SHORT).show()
         return
     }
 
@@ -125,7 +132,7 @@ private fun fetchBorrowedLaptops() {
             borrowedLaptops.clear()
 
             if (documents.isEmpty) {
-                Toast.makeText(applicationContext, "Belum ada laptop dipinjam", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@profile, "Belum ada laptop dipinjam", Toast.LENGTH_SHORT).show()
             }
 
             for (document in documents) {
@@ -137,6 +144,6 @@ private fun fetchBorrowedLaptops() {
         }
         .addOnFailureListener { exception ->
             Log.e("ProfileActivity", "Error mengambil data", exception)
-            Toast.makeText(applicationContext, "Gagal memuat data", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@profile, "Gagal memuat data", Toast.LENGTH_SHORT).show()
         }
 }
