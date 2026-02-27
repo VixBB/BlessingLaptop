@@ -38,7 +38,6 @@ class DetailActivity : AppCompatActivity() {
         val gambarNama = intent.getStringExtra("GAMBAR_LAPTOP_NAMA")
 
         tvNama.text = namaLaptop
-
         // Handle image loading
         if (gambarData != null) {
             try {
