@@ -181,16 +181,29 @@ class DetailActivity : AppCompatActivity() {
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val btnOk = dialogView.findViewById<Button>(R.id.btn_dialog_ok)
+
         btnOk?.setOnClickListener {
-            laptopDocumentId?.let {
-                db.collection("laptops").document(it)
-                    .update(mapOf(
-                        "borrowed" to true,
-                        "peminjamNama" to "User Student", // Placeholder
-                        "peminjamNis" to "12345678",      // Placeholder
-                        "peminjamKelas" to "XI RPL 2"   // Placeholder
-                    ))
+            // 1. Ambil data dari SessionManager yang sudah diisi saat login
+            val currentUserNama = SessionManager.nama ?: "Unknown"
+            val currentUserNis = SessionManager.nis ?: "-"
+            val currentUserKelas = SessionManager.kelas ?: "-"
+            val currentUserId = SessionManager.userId ?: ""
+
+            // 2. Pastikan document ID laptop tidak null
+            laptopDocumentId?.let { id ->
+                val updateData = mapOf(
+                    "borrowed" to true,
+                    "peminjamNama" to currentUserNama,
+                    "peminjamNis" to currentUserNis,
+                    "peminjamKelas" to currentUserKelas,
+                    "BorrowedBy" to currentUserId // Menyimpan ID user ke field BorrowedBy di Firestore
+                )
+
+                // 3. Update data ke koleksi "laptops"
+                db.collection("laptops").document(id)
+                    .update(updateData)
                     .addOnSuccessListener {
+                        // Berhasil update
                         dialog.dismiss()
                         val intent = Intent(this, ProfileActivity::class.java)
                         startActivity(intent)
@@ -198,12 +211,15 @@ class DetailActivity : AppCompatActivity() {
                         finish()
                     }
                     .addOnFailureListener { e ->
+                        // Gagal update
                         Toast.makeText(this, "Gagal meminjam: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             }
         }
 
         dialog.show()
+
+        // Mengatur lebar dialog agar rapi (85% lebar layar)
         val width = (resources.displayMetrics.widthPixels * 0.85).toInt()
         dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }

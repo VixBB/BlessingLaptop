@@ -1,108 +1,85 @@
 package com.example.loginmenu
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var usernameInput: EditText
-    private lateinit var passwordInput: EditText
-    private lateinit var loginBtn: Button
-
-    // 1. Inisialisasi Firebase
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
+    private lateinit var auth: FirebaseAuth
+    private val db = FirebaseFirestore.getInstance() // Tambahkan inisialisasi Firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        usernameInput = findViewById(R.id.username_input)
-        passwordInput = findViewById(R.id.password_input)
-        loginBtn = findViewById(R.id.login_btn)
+        auth = FirebaseAuth.getInstance()
 
-        loginBtn.setOnClickListener {
-            val username = usernameInput.text.toString().trim()
-            val password = passwordInput.text.toString().trim()
+        val etEmail = findViewById<EditText>(R.id.username_input)
+        val etPassword = findViewById<EditText>(R.id.password_input)
+        val btnLogin = findViewById<Button>(R.id.login_btn)
 
-            if (username.isEmpty() || password.isEmpty()) {
-                Snackbar.make(loginBtn, "Please fill in both fields!", Snackbar.LENGTH_SHORT).show()
+        btnLogin.setOnClickListener {
+            val email = etEmail.text.toString().trim()
+            val password = etPassword.text.toString()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Email dan password tidak boleh kosong", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Trik: Jika user input "admin", kita anggap emailnya "admin@myapp.com"
-            // Karena Firebase Auth wajib menggunakan format email.
-            val emailFake = if (username.contains("@")) username else "$username@myapp.com"
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        val userId = auth.currentUser?.uid ?: ""
 
-            loginKeFirebase(emailFake, password)
+                        // LOGIKA BARU: Ambil data user dari Firestore
+                        fetchUserData(userId, email)
+                    } else {
+                        Toast.makeText(this, "Login Gagal: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
         }
     }
 
-    private fun loginKeFirebase(email: String, pass: String) {
-        // 2. Proses Login ke Firebase Auth
-        auth.signInWithEmailAndPassword(email, pass)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val uid = auth.currentUser?.uid
-                    if (uid != null) {
-                        // 3. Jika login sukses, cek Role di Firestore
-                        checkUserRole(uid)
-                    }
-                } else {
-                    Log.e("LoginError", "Error: ${task.exception?.message}")
-                    Snackbar.make(loginBtn, "❌ Login Gagal: ${task.exception?.message}", Snackbar.LENGTH_LONG).show()
-                }
-            }
-    }
-
-    private fun checkUserRole(uid: String) {
-        // 4. Ambil dokumen berdasarkan UID yang sedang login
-        db.collection("users").document(uid).get()
+    private fun fetchUserData(userId: String, email: String) {
+        db.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
-                    val role = document.getString("role")
+                    // Simpan data ke SessionManager agar bisa dipakai di DetailActivity
+                    SessionManager.userId = userId
+                    SessionManager.nama = document.getString("nama")
+                    SessionManager.nis = document.getString("nis")
+                    SessionManager.kelas = document.getString("kelas")
 
-                    if (role == "admin") {
-                        // JIKA ADMIN
+                    // Tentukan navigasi
+                    if (email == "admin@gmail.com") {
                         SessionManager.isAdmin = true
-                        Snackbar.make(loginBtn, "✅ Welcome Admin!", Snackbar.LENGTH_SHORT).show()
                         startActivity(Intent(this, HomeAdmin::class.java))
                     } else {
-                        // JIKA USER BIASA
                         SessionManager.isAdmin = false
-                        Snackbar.make(loginBtn, "✅ Welcome User!", Snackbar.LENGTH_SHORT).show()
                         startActivity(Intent(this, HomeActivity::class.java))
                     }
-                    finish() // Tutup MainActivity agar tidak bisa back ke login
+                    finish()
                 } else {
-                    Snackbar.make(loginBtn, "❌ Data role tidak ditemukan!", Snackbar.LENGTH_SHORT).show()
+                    // Jika data di koleksi 'users' tidak ada (biasanya untuk admin yang belum didaftarkan di firestore)
+                    if (email == "admin@gmail.com") {
+                        SessionManager.isAdmin = true
+                        SessionManager.nama = "Administrator"
+                        startActivity(Intent(this, HomeAdmin::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Data profil tidak ditemukan!", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .addOnFailureListener { e ->
-                Snackbar.make(loginBtn, "Error Firestore: ${e.message}", Snackbar.LENGTH_SHORT).show()
+                Toast.makeText(this, "Gagal mengambil data: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-    }
-
-    fun openInstagram(view: View) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse("https://www.instagram.com/smkn1denpasar/")
-        startActivity(intent)
-    }
-
-    fun openFacebook(view: View) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse("https://m.facebook.com/Smkn1dps/")
-        startActivity(intent)
     }
 }
