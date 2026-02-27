@@ -28,6 +28,9 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        // Initialize SessionManager
+        SessionManager.init(applicationContext)
+
         usernameInput = findViewById(R.id.username_input)
         passwordInput = findViewById(R.id.password_input)
         loginBtn = findViewById(R.id.login_btn)
@@ -81,6 +84,9 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         // JIKA USER BIASA
                         SessionManager.isAdmin = false
+                        SessionManager.nama = document.getString("nama")
+                        SessionManager.nis = document.getString("nis")
+                        SessionManager.kelas = document.getString("kelas")
                         Snackbar.make(loginBtn, "✅ Welcome User!", Snackbar.LENGTH_SHORT).show()
                         startActivity(Intent(this, HomeActivity::class.java))
                     }

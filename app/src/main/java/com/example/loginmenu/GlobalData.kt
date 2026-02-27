@@ -13,6 +13,7 @@ data class Laptop(
     var peminjamNama: String? = null,
     var peminjamNis: String? = null,
     var peminjamKelas: String? = null,
+    var borrowedBy: String? = null,
     // New fields for detailed specs
     val processor: String? = null,
     val graphics: String? = null,

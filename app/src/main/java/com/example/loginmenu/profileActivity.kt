@@ -5,23 +5,13 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
-
-
 import androidx.appcompat.app.AppCompatActivity
-
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.firestore.FirebaseFirestore
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-
-private lateinit var rvPinjam: RecyclerView
-private lateinit var adapter: LaptopAdapter
-private val borrowedLaptops = mutableListOf<Laptop>()
-
-private val db = FirebaseFirestore.getInstance()
-private val laptopCollection = db.collection("laptops")
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var rvPinjam: RecyclerView
@@ -35,20 +25,24 @@ class ProfileActivity : AppCompatActivity() {
         super.onResume()
         fetchBorrowedLaptops()
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+
+        auth = FirebaseAuth.getInstance()
 
         val btnLogout = findViewById<TextView>(R.id.tv_logout)
         val tvUsername = findViewById<TextView>(R.id.tv_username)
         val tvEmail = findViewById<TextView>(R.id.tv_email)
 
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        tvUsername.text = currentUser?.displayName ?: "Pengguna"
+        val currentUser = auth.currentUser
+        tvUsername.text = SessionManager.nama ?: currentUser?.displayName ?: "Pengguna"
         tvEmail.text = currentUser?.email ?: "email@example.com"
 
         btnLogout.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
+            auth.signOut()
+            SessionManager.clear() // Clear session data on logout
             val intent = Intent(this, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
@@ -59,8 +53,6 @@ class ProfileActivity : AppCompatActivity() {
         rvPinjam.layoutManager = LinearLayoutManager(this)
         adapter = LaptopAdapter(borrowedLaptops)
         rvPinjam.adapter = adapter
-
-        fetchBorrowedLaptops()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.selectedItemId = R.id.nav_profile
@@ -90,8 +82,12 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun fetchBorrowedLaptops() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser == null) return
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            borrowedLaptops.clear()
+            adapter.notifyDataSetChanged()
+            return
+        }
 
         val uid = currentUser.uid
 
@@ -101,51 +97,15 @@ class ProfileActivity : AppCompatActivity() {
             .get()
             .addOnSuccessListener { documents ->
                 borrowedLaptops.clear()
-
                 for (document in documents) {
                     val laptop = document.toObject(Laptop::class.java)
                     borrowedLaptops.add(laptop)
                 }
-
                 adapter.notifyDataSetChanged()
             }
             .addOnFailureListener { exception ->
-                Log.w("ProfileActivity", "Error getting documents: ", exception)
+                Log.e("ProfileActivity", "Error getting documents: ", exception)
+                Toast.makeText(this, "Failed to load borrowed items. Check logs.", Toast.LENGTH_LONG).show()
             }
     }
-}
-
-private fun fetchBorrowedLaptops() {
-
-    val currentUser = FirebaseAuth.getInstance().currentUser
-    if (currentUser == null) {
-        Toast.makeText(this, "User Belum Login", Toast.LENGTH_SHORT).show()
-        return
-    }
-
-    val uid = currentUser.uid
-
-    laptopCollection
-        .whereEqualTo("borrowed", true)
-        .whereEqualTo("borrowedBy", uid)
-        .get()
-        .addOnSuccessListener { documents ->
-
-            borrowedLaptops.clear()
-
-            if (documents.isEmpty) {
-                Toast.makeText(this, "Belum ada Laptop Yang Dipinjam", Toast.LENGTH_SHORT).show()
-            }
-
-            for (document in documents) {
-                val laptop = document.toObject(Laptop::class.java)
-                borrowedLaptops.add(laptop)
-            }
-
-            adapter.notifyDataSetChanged()
-        }
-        .addOnFailureListener { exception ->
-            Log.e("ProfileActivity", "Error mengambil data", exception)
-            Toast.makeText(this, "Gagal mengambil data", Toast.LENGTH_SHORT).show()
-        }
 }

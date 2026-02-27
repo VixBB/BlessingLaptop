@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class DetailActivity : AppCompatActivity() {
@@ -102,10 +103,12 @@ class DetailActivity : AppCompatActivity() {
 
     private fun updateUi(btnPinjam: Button) {
         currentLaptop?.let { laptop ->
+
             if (SessionManager.isAdmin) {
+
                 btnPinjam.text = "Detail Peminjam"
                 btnPinjam.setBackgroundColor(Color.parseColor("#002052"))
-                btnPinjam.setOnClickListener {
+                btnPinjam.setOnClickListener { 
                     if (laptop.borrowed) {
                         showBorrowerDetailDialog()
                     } else {
@@ -116,7 +119,9 @@ class DetailActivity : AppCompatActivity() {
                 if (laptop.borrowed) {
                     btnPinjam.setBackgroundColor(Color.GRAY)
                     btnPinjam.text = "Laptop Tidak Tersedia"
-                    btnPinjam.setOnClickListener { showFailedDialog() }
+                    btnPinjam.setOnClickListener {
+                        showFailedDialog()
+                    }
                 } else {
                     btnPinjam.setBackgroundColor(Color.parseColor("#00AD00"))
                     btnPinjam.text = "Pinjam Sekarang"
@@ -153,7 +158,8 @@ class DetailActivity : AppCompatActivity() {
                         "borrowed" to false,
                         "peminjamNama" to "",
                         "peminjamNis" to "",
-                        "peminjamKelas" to ""
+                        "peminjamKelas" to "",
+                        "borrowedBy" to ""
                     ))
                     .addOnSuccessListener {
                         Toast.makeText(this, "Status laptop telah dikembalikan", Toast.LENGTH_SHORT).show()
@@ -183,13 +189,19 @@ class DetailActivity : AppCompatActivity() {
 
         val btnOk = dialogView.findViewById<Button>(R.id.btn_dialog_ok)
         btnOk?.setOnClickListener {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid == null) {
+                Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             laptopDocumentId?.let {
                 db.collection("laptops").document(it)
                     .update(mapOf(
                         "borrowed" to true,
-                        "peminjamNama" to "User Student", // Placeholder
-                        "peminjamNis" to "12345678",      // Placeholder
-                        "peminjamKelas" to "XI RPL 2"   // Placeholder
+                        "peminjamNama" to SessionManager.nama,
+                        "peminjamNis" to SessionManager.nis,
+                        "peminjamKelas" to SessionManager.kelas,
+                        "borrowedBy" to uid
                     ))
                     .addOnSuccessListener {
                         dialog.dismiss()
