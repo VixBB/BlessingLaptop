@@ -1,11 +1,9 @@
 package com.example.loginmenu
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.Button
@@ -16,7 +14,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class DetailActivity : AppCompatActivity() {
@@ -35,26 +32,16 @@ class DetailActivity : AppCompatActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         val namaLaptop = intent.getStringExtra("NAMA_LAPTOP") ?: ""
-        val gambarData = intent.getStringExtra("GAMBAR_LAPTOP_DATA")
         val gambarNama = intent.getStringExtra("GAMBAR_LAPTOP_NAMA")
 
         tvNama.text = namaLaptop
 
-        // Handle image loading
-        if (gambarData != null) {
-            try {
-                val imageBytes = Base64.decode(gambarData, Base64.DEFAULT)
-                val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                Glide.with(this).load(decodedImage).placeholder(R.drawable.skensa).into(imgDetail)
-            } catch (e: Exception) {
-                imgDetail.setImageResource(R.drawable.skensa)
-            }
-        } else if (gambarNama != null) {
-            val imageId = resources.getIdentifier(gambarNama, "drawable", packageName)
-            Glide.with(this).load(if (imageId != 0) imageId else R.drawable.skensa).placeholder(R.drawable.skensa).into(imgDetail)
-        } else {
-            imgDetail.setImageResource(R.drawable.skensa)
-        }
+        // Get resource ID from image name
+        val imageId = resources.getIdentifier(gambarNama, "drawable", packageName)
+        Glide.with(this)
+            .load(if (imageId != 0) imageId else R.drawable.skensa) // Fallback to placeholder
+            .placeholder(R.drawable.skensa)
+            .into(imgDetail)
 
         fetchLaptopDetails(namaLaptop, btnPinjam)
 
@@ -103,12 +90,10 @@ class DetailActivity : AppCompatActivity() {
 
     private fun updateUi(btnPinjam: Button) {
         currentLaptop?.let { laptop ->
-
             if (SessionManager.isAdmin) {
-
                 btnPinjam.text = "Detail Peminjam"
                 btnPinjam.setBackgroundColor(Color.parseColor("#002052"))
-                btnPinjam.setOnClickListener { 
+                btnPinjam.setOnClickListener {
                     if (laptop.borrowed) {
                         showBorrowerDetailDialog()
                     } else {
@@ -119,9 +104,7 @@ class DetailActivity : AppCompatActivity() {
                 if (laptop.borrowed) {
                     btnPinjam.setBackgroundColor(Color.GRAY)
                     btnPinjam.text = "Laptop Tidak Tersedia"
-                    btnPinjam.setOnClickListener {
-                        showFailedDialog()
-                    }
+                    btnPinjam.setOnClickListener { showFailedDialog() }
                 } else {
                     btnPinjam.setBackgroundColor(Color.parseColor("#00AD00"))
                     btnPinjam.text = "Pinjam Sekarang"
@@ -158,8 +141,7 @@ class DetailActivity : AppCompatActivity() {
                         "borrowed" to false,
                         "peminjamNama" to "",
                         "peminjamNis" to "",
-                        "peminjamKelas" to "",
-                        "borrowedBy" to ""
+                        "peminjamKelas" to ""
                     ))
                     .addOnSuccessListener {
                         Toast.makeText(this, "Status laptop telah dikembalikan", Toast.LENGTH_SHORT).show()
@@ -188,22 +170,29 @@ class DetailActivity : AppCompatActivity() {
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val btnOk = dialogView.findViewById<Button>(R.id.btn_dialog_ok)
+
         btnOk?.setOnClickListener {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
-            if (uid == null) {
-                Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            laptopDocumentId?.let {
-                db.collection("laptops").document(it)
-                    .update(mapOf(
-                        "borrowed" to true,
-                        "peminjamNama" to SessionManager.nama,
-                        "peminjamNis" to SessionManager.nis,
-                        "peminjamKelas" to SessionManager.kelas,
-                        "borrowedBy" to uid
-                    ))
+            // 1. Ambil data dari SessionManager yang sudah diisi saat login
+            val currentUserNama = SessionManager.nama ?: "Unknown"
+            val currentUserNis = SessionManager.nis ?: "-"
+            val currentUserKelas = SessionManager.kelas ?: "-"
+            val currentUserId = SessionManager.userId ?: ""
+
+            // 2. Pastikan document ID laptop tidak null
+            laptopDocumentId?.let { id ->
+                val updateData = mapOf(
+                    "borrowed" to true,
+                    "peminjamNama" to currentUserNama,
+                    "peminjamNis" to currentUserNis,
+                    "peminjamKelas" to currentUserKelas,
+                    "BorrowedBy" to currentUserId // Menyimpan ID user ke field BorrowedBy di Firestore
+                )
+
+                // 3. Update data ke koleksi "laptops"
+                db.collection("laptops").document(id)
+                    .update(updateData)
                     .addOnSuccessListener {
+                        // Berhasil update
                         dialog.dismiss()
                         val intent = Intent(this, ProfileActivity::class.java)
                         startActivity(intent)
@@ -211,12 +200,15 @@ class DetailActivity : AppCompatActivity() {
                         finish()
                     }
                     .addOnFailureListener { e ->
+                        // Gagal update
                         Toast.makeText(this, "Gagal meminjam: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             }
         }
 
         dialog.show()
+
+        // Mengatur lebar dialog agar rapi (85% lebar layar)
         val width = (resources.displayMetrics.widthPixels * 0.85).toInt()
         dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
