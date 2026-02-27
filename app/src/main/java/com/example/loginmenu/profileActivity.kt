@@ -23,6 +23,7 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
+
         val btnLogout = findViewById<TextView>(R.id.tv_logout)
         val tvUsername = findViewById<TextView>(R.id.tv_username)
         val tvEmail = findViewById<TextView>(R.id.tv_email)

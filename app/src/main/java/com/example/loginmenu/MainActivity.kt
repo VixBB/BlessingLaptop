@@ -7,10 +7,12 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private val db = FirebaseFirestore.getInstance() // Tambahkan inisialisasi Firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         val btnLogin = findViewById<Button>(R.id.login_btn)
 
         btnLogin.setOnClickListener {
-            val email = etEmail.text.toString()
+            val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString()
 
             if (email.isEmpty() || password.isEmpty()) {
@@ -34,31 +36,50 @@ class MainActivity : AppCompatActivity() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        // Cek apakah ini akun admin
-                        if (email == "admin@gmail.com") {
-                            SessionManager.isAdmin = true
-                            val intent = Intent(this, HomeAdmin::class.java)
-                            startActivity(intent)
-                        } else {
-                            SessionManager.isAdmin = false
-                            val intent = Intent(this, HomeActivity::class.java)
-                            startActivity(intent)
-                        }
-                        finish() // Selesaikan MainActivity agar tidak bisa kembali
+                        val userId = auth.currentUser?.uid ?: ""
+
+                        // LOGIKA BARU: Ambil data user dari Firestore
+                        fetchUserData(userId, email)
                     } else {
-                        Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Login Gagal: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
         }
+    }
 
-        // The original activity_main.xml does not have a register button with R.id.btn_register.
-        // If you add one, you can re-introduce the following lines:
-        /*
-        val btnRegister = findViewById<Button>(R.id.btn_register)
-        btnRegister.setOnClickListener {
-            val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
-        }
-        */
+    private fun fetchUserData(userId: String, email: String) {
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    // Simpan data ke SessionManager agar bisa dipakai di DetailActivity
+                    SessionManager.userId = userId
+                    SessionManager.nama = document.getString("nama")
+                    SessionManager.nis = document.getString("nis")
+                    SessionManager.kelas = document.getString("kelas")
+
+                    // Tentukan navigasi
+                    if (email == "admin@gmail.com") {
+                        SessionManager.isAdmin = true
+                        startActivity(Intent(this, HomeAdmin::class.java))
+                    } else {
+                        SessionManager.isAdmin = false
+                        startActivity(Intent(this, HomeActivity::class.java))
+                    }
+                    finish()
+                } else {
+                    // Jika data di koleksi 'users' tidak ada (biasanya untuk admin yang belum didaftarkan di firestore)
+                    if (email == "admin@gmail.com") {
+                        SessionManager.isAdmin = true
+                        SessionManager.nama = "Administrator"
+                        startActivity(Intent(this, HomeAdmin::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Data profil tidak ditemukan!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal mengambil data: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 }
