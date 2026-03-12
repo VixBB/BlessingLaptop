@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import android.widget.Toast
+import android.content.Context
 class LaptopActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,4 +59,19 @@ class LaptopActivity : AppCompatActivity() {
             }
         }
     }
+}
+private fun borrowLaptop(laptopId: String) {
+
+    val user = FirebaseAuth.getInstance().currentUser ?: return
+    val uid = user.uid
+
+    FirebaseFirestore.getInstance()
+        .collection("laptops")
+        .document(laptopId)
+        .update(
+            mapOf(
+                "borrowed" to true,
+                "borrowedBy" to uid
+            )
+        )
 }
