@@ -24,6 +24,13 @@ class DetailActivity : AppCompatActivity() {
     private var currentLaptop: Laptop? = null
     private var laptopDocumentId: String? = null
 
+    private lateinit var tvSpecProcessor: TextView
+    private lateinit var tvSpecGraphics: TextView
+    private lateinit var tvSpecRam: TextView
+    private lateinit var tvSpecStorage: TextView
+    private lateinit var tvSpecScreen: TextView
+    private lateinit var tvSpecOs: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.detail_activity)
@@ -32,6 +39,13 @@ class DetailActivity : AppCompatActivity() {
         val imgDetail = findViewById<ImageView>(R.id.img_detail_laptop)
         val btnPinjam = findViewById<Button>(R.id.btn_pinjam)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+        tvSpecProcessor = findViewById(R.id.tv_spec_processor)
+        tvSpecGraphics = findViewById(R.id.tv_spec_graphics)
+        tvSpecRam = findViewById(R.id.tv_spec_ram)
+        tvSpecStorage = findViewById(R.id.tv_spec_storage)
+        tvSpecScreen = findViewById(R.id.tv_spec_screen)
+        tvSpecOs = findViewById(R.id.tv_spec_os)
 
         val namaLaptop = intent.getStringExtra("NAMA_LAPTOP") ?: ""
         val gambarData = intent.getStringExtra("GAMBAR_LAPTOP_DATA")
@@ -101,6 +115,15 @@ class DetailActivity : AppCompatActivity() {
 
     private fun updateUi(btnPinjam: Button) {
         currentLaptop?.let { laptop ->
+            // Update spec fields
+            tvSpecProcessor.text = "• Prosesor: ${laptop.processor ?: "-"}"
+            tvSpecGraphics.text = "• Grafis: ${laptop.graphics ?: "-"}"
+            tvSpecRam.text = "• Memori: ${laptop.ram ?: "-"}"
+            tvSpecStorage.text = "• Penyimpanan: ${laptop.storage ?: "-"}"
+            tvSpecScreen.text = "• Layar: ${laptop.screen ?: "-"}"
+            tvSpecOs.text = "• OS: ${laptop.os ?: "-"}"
+
+            // Update button logic
             if (SessionManager.isAdmin) {
                 btnPinjam.text = "Detail Peminjam"
                 btnPinjam.setBackgroundColor(Color.parseColor("#002052"))
@@ -181,29 +204,16 @@ class DetailActivity : AppCompatActivity() {
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val btnOk = dialogView.findViewById<Button>(R.id.btn_dialog_ok)
-
         btnOk?.setOnClickListener {
-            // 1. Ambil data dari SessionManager yang sudah diisi saat login
-            val currentUserNama = SessionManager.nama ?: "Unknown"
-            val currentUserNis = SessionManager.nis ?: "-"
-            val currentUserKelas = SessionManager.kelas ?: "-"
-            val currentUserId = SessionManager.userId ?: ""
-
-            // 2. Pastikan document ID laptop tidak null
             laptopDocumentId?.let { id ->
-                val updateData = mapOf(
-                    "borrowed" to true,
-                    "peminjamNama" to currentUserNama,
-                    "peminjamNis" to currentUserNis,
-                    "peminjamKelas" to currentUserKelas,
-                    "BorrowedBy" to currentUserId // Menyimpan ID user ke field BorrowedBy di Firestore
-                )
-
-                // 3. Update data ke koleksi "laptops"
                 db.collection("laptops").document(id)
-                    .update(updateData)
+                    .update(mapOf(
+                        "borrowed" to true,
+                        "peminjamNama" to "User Student", // Placeholder
+                        "peminjamNis" to "12345678",      // Placeholder
+                        "peminjamKelas" to "XI RPL 2"   // Placeholder
+                    ))
                     .addOnSuccessListener {
-                        // Berhasil update
                         dialog.dismiss()
                         val intent = Intent(this, ProfileActivity::class.java)
                         startActivity(intent)
@@ -211,15 +221,12 @@ class DetailActivity : AppCompatActivity() {
                         finish()
                     }
                     .addOnFailureListener { e ->
-                        // Gagal update
                         Toast.makeText(this, "Gagal meminjam: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             }
         }
 
         dialog.show()
-
-        // Mengatur lebar dialog agar rapi (85% lebar layar)
         val width = (resources.displayMetrics.widthPixels * 0.85).toInt()
         dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }

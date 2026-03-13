@@ -6,22 +6,22 @@
     android:background="#121212">
 
     <RelativeLayout
-    android:id="@+id/header_profile"
-    android:layout_width="match_parent"
-    android:layout_height="100dp"
-    android:background="@drawable/header_home"
-    android:paddingTop="40dp">
+        android:id="@+id/header_profile"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/header_home"
+        android:paddingTop="40dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Profile"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginTop="14dp"
-        android:layout_centerHorizontal="true" />
-</RelativeLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Profile Admin"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="14dp"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -43,9 +43,10 @@
                 android:layout_marginTop="20dp" />
 
             <TextView
+                android:id="@+id/tv_admin_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="I Gde Aditya Shivano Yasa"
+                android:text="Admin Name"
                 android:textColor="@color/white"
                 android:textSize="22sp"
                 android:textStyle="bold"
@@ -75,9 +76,10 @@
                     android:textColor="@color/white"
                     android:textStyle="bold" />
                 <TextView
+                    android:id="@+id/tv_admin_username_data"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="I Gde Aditya Shivano Yasa"
+                    android:text="-"
                     android:textColor="#AAAAAA" />
 
                 <TextView
@@ -88,18 +90,24 @@
                     android:textStyle="bold"
                     android:layout_marginTop="10dp"/>
                 <TextView
+                    android:id="@+id/tv_admin_nis"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="30509"
+                    android:text="-"
                     android:textColor="#AAAAAA" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Admin"
+                    android:text="Status"
                     android:textColor="@color/white"
                     android:textStyle="bold"
                     android:layout_marginTop="10dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Administrator"
+                    android:textColor="#AAAAAA" />
             </LinearLayout>
 
         </LinearLayout>

@@ -4,9 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="10dp"
-    app:cardBackgroundColor="#222222"
+    app:cardBackgroundColor="#1E1E1E"
     app:cardCornerRadius="15dp"
-    app:cardElevation="0dp">
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,24 +20,30 @@
             android:id="@+id/img_laptop_pinjam"
             android:layout_width="150dp"
             android:layout_height="100dp"
-            android:src="@drawable/airm2" />
+            android:src="@drawable/airm2"
+            android:scaleType="centerInside"/>
 
         <TextView
             android:id="@+id/tv_nama_pinjam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Lenovo Legion 5 Pro"
+            android:text="Nama Laptop"
             android:textColor="@color/white"
             android:textStyle="bold"
+            android:textSize="18sp"
             android:layout_marginTop="8dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Dipinjam"
-            android:textColor="#FF0000"
-            android:textSize="12sp"
+            android:textColor="#E53935"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:layout_marginTop="4dp"/>
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="8dp"
+            android:background="@drawable/radiuscorner"
+            android:backgroundTint="#262626"
+            android:layout_marginTop="12dp"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

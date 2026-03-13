@@ -83,12 +83,35 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tv_detail_spek"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="• Prosesor: AMD Ryzen 7 5800H\n• Grafis: NVIDIA RTX 3060 6GB\n• Memori: 16GB DDR4\n• Penyimpanan: 512GB SSD NVMe\n• Layar: 16 inch WQXGA 165Hz\n• OS: Windows 11 Home"
-                    android:textColor="#BBBBBB" />
+                    android:id="@+id/tv_spec_processor"
+                    style="@style/SpecTextView"
+                    android:text="• Prosesor: " />
+
+                <TextView
+                    android:id="@+id/tv_spec_graphics"
+                    style="@style/SpecTextView"
+                    android:text="• Grafis: " />
+
+                <TextView
+                    android:id="@+id/tv_spec_ram"
+                    style="@style/SpecTextView"
+                    android:text="• Memori: " />
+
+                <TextView
+                    android:id="@+id/tv_spec_storage"
+                    style="@style/SpecTextView"
+                    android:text="• Penyimpanan: " />
+
+                <TextView
+                    android:id="@+id/tv_spec_screen"
+                    style="@style/SpecTextView"
+                    android:text="• Layar: " />
+
+                <TextView
+                    android:id="@+id/tv_spec_os"
+                    style="@style/SpecTextView"
+                    android:text="• OS: " />
+
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
@@ -107,6 +130,3 @@
         app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>
-
-
-

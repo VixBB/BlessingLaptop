@@ -85,9 +85,10 @@
                     android:textColor="@color/white"
                     android:textStyle="bold" />
                 <TextView
+                    android:id="@+id/tv_username_data"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="I Gde Aditya Shivano Yasa"
+                    android:text="-"
                     android:textColor="#AAAAAA" />
 
                 <TextView
@@ -98,9 +99,10 @@
                     android:textStyle="bold"
                     android:layout_marginTop="10dp"/>
                 <TextView
+                    android:id="@+id/tv_nis"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="30509"
+                    android:text="-"
                     android:textColor="#AAAAAA" />
 
                 <TextView
@@ -111,9 +113,10 @@
                     android:textStyle="bold"
                     android:layout_marginTop="10dp"/>
                 <TextView
+                    android:id="@+id/tv_kelas"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="XII RPL 2"
+                    android:text="-"
                     android:textColor="#AAAAAA" />
             </LinearLayout>
 

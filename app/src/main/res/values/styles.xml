@@ -18,4 +18,11 @@
         <item name="android:textColorHint">#444444</item>
         <item name="android:textSize">14sp</item>
     </style>
+
+    <style name="SpecTextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textColor">#BBBBBB</item>
+    </style>
 </resources>
