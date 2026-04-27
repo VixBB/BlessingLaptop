@@ -163,9 +163,9 @@ class DetailActivity : AppCompatActivity() {
         val btnClose = dialogView.findViewById<Button>(R.id.btn_dialog_close)
 
         currentLaptop?.let {
-            tvNama.text = it.peminjamNama
-            tvNis.text = it.peminjamNis
-            tvKelas.text = it.peminjamKelas
+            tvNama.text = it.peminjamNama ?: "-"
+            tvNis.text = it.peminjamNis ?: "-"
+            tvKelas.text = it.peminjamKelas ?: "-"
         }
 
         btnKembalikan.setOnClickListener {
@@ -206,12 +206,13 @@ class DetailActivity : AppCompatActivity() {
         val btnOk = dialogView.findViewById<Button>(R.id.btn_dialog_ok)
         btnOk?.setOnClickListener {
             laptopDocumentId?.let { id ->
+                // Update Firestore using REAL data from SessionManager
                 db.collection("laptops").document(id)
                     .update(mapOf(
                         "borrowed" to true,
-                        "peminjamNama" to "User Student", // Placeholder
-                        "peminjamNis" to "12345678",      // Placeholder
-                        "peminjamKelas" to "XI RPL 2"   // Placeholder
+                        "peminjamNama" to (SessionManager.nama ?: "Anonymous"),
+                        "peminjamNis" to (SessionManager.nis ?: "-"),
+                        "peminjamKelas" to (SessionManager.kelas ?: "-")
                     ))
                     .addOnSuccessListener {
                         dialog.dismiss()
