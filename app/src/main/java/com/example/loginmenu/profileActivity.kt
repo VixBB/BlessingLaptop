@@ -79,7 +79,7 @@ class ProfileActivity : AppCompatActivity() {
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    val username = document.getString("username") ?: "-"
+                    val username = document.getString("nama") ?: "-"
                     val nis = document.getString("nis") ?: "-"
                     val kelas = document.getString("kelas") ?: "-"
 

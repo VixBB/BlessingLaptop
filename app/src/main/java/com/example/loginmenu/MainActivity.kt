@@ -12,7 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-    private val db = FirebaseFirestore.getInstance() // Tambahkan inisialisasi Firestore
+    private val db = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,12 +33,11 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // Removed the "Email Trick". Users must now enter their full email.
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
                         val userId = auth.currentUser?.uid ?: ""
-
-                        // LOGIKA BARU: Ambil data user dari Firestore
                         fetchUserData(userId, email)
                     } else {
                         Toast.makeText(this, "Login Gagal: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
@@ -51,14 +50,16 @@ class MainActivity : AppCompatActivity() {
         db.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
-                    // Simpan data ke SessionManager agar bisa dipakai di DetailActivity
+                    // Simpan data ke SessionManager
                     SessionManager.userId = userId
-                    SessionManager.nama = document.getString("nama")
+                    SessionManager.nama = document.getString("username") ?: document.getString("nama")
                     SessionManager.nis = document.getString("nis")
                     SessionManager.kelas = document.getString("kelas")
 
-                    // Tentukan navigasi
-                    if (email == "admin@gmail.com") {
+                    val role = document.getString("role")
+
+                    // Navigasi berdasarkan role atau hardcoded admin email
+                    if (role == "admin" || email == "admin@gmail.com") {
                         SessionManager.isAdmin = true
                         startActivity(Intent(this, HomeAdmin::class.java))
                     } else {
@@ -67,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     finish()
                 } else {
-                    // Jika data di koleksi 'users' tidak ada (biasanya untuk admin yang belum didaftarkan di firestore)
+                    // Fallback untuk admin jika dokumen Firestore belum ada
                     if (email == "admin@gmail.com") {
                         SessionManager.isAdmin = true
                         SessionManager.nama = "Administrator"
